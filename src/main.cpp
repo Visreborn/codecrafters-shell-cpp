@@ -13,10 +13,12 @@ int main() {
 	cerr << std::unitbuf;
 
 	// TODO: Uncomment the code below to pass the first stage
-	cout << "$ ";
+	while(1) {
+		cout << "$ ";
 
-	string input;
-	getline(std :: cin, input);
+		string input;
+		getline(std :: cin, input);
 
-	cout << input << ": command not found" << endl;
+		cout << input << ": command not found" << endl;
+	}
 }
