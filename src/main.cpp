@@ -2,6 +2,10 @@
 #include<string>
 #include<vector>
 #include<utility>
+#include<unistd.h>
+#include<filesystem>
+#include<cstdlib>
+#include<sstream>
 
 using std :: cin;
 using std :: cout;
@@ -9,7 +13,15 @@ using std :: cerr;
 using std :: string;
 using std :: endl;
 
+#if defined(_WIN32)
+	const char PATH_DELIMETER = ';'; // this is for Windows
+#else
+	const char PATH_DELIMETER = ':'; // this is for Linux
+#endif
+
 const std :: vector<string> BUILTIN_COMMANDS = {"echo", "exit", "type"};
+const std :: vector<string> LOCAL_PATH = {"D:\\Programming\\CP", "D:\\tro-choi-o-chu-ve-moi-truong-va-hoa-hoc\\phuong phap1"};
+std :: vector<string> FETCH_PATH;
 
 int skip_ws(int i, const string &input) { // skip white spaces
 	while(i < input.size() && input[i] == ' ') {
@@ -28,6 +40,27 @@ std :: pair<int, string> get_token(int i, const string &input) { // get the toke
 	}
 
 	return {i, tmp};
+}
+
+bool IsExecutable(const string &path) {
+	return access(path.c_str(), X_OK) == 0;
+}
+
+void init_path() {
+	const char *path_env = std :: getenv("PATH");
+
+	// check if somehow the PATH does not exist
+	if(path_env == nullptr) return;
+
+	std :: string path_str(path_env); // this is equal to string path_str = path_env.string()
+	std :: stringstream ss(path_str);
+	std :: string dir;
+
+	while(getline(ss, dir, PATH_DELIMETER)) {
+		if(dir.size() > 0) {
+			FETCH_PATH.push_back(dir);
+		}
+	}
 }
 
 bool status(const string &input) {
@@ -90,6 +123,23 @@ void handle_type(int i, const string &input) {
 		}
 	}
 
+	for(const auto &path : FETCH_PATH) {
+		// check if this directory actually exist on the online disk
+		if(!std :: filesystem :: exists(path)) {
+			continue;
+		}
+
+		for(const auto &entry : std :: filesystem :: directory_iterator(path)) {
+			string absolute_path = entry.path().string();
+			string file_name = entry.path().filename().string();
+
+			if(file_name == token && IsExecutable(absolute_path)) {
+				cout << token << " is " << absolute_path << endl;
+				return;
+			}
+		}
+	}
+
 	cout << token << ": not found" << endl;
 }
 
@@ -124,7 +174,8 @@ int main() {
 	cout << std::unitbuf;
 	cerr << std::unitbuf;
 
-	// TODO: Uncomment the code below to pass the first stage
+	init_path();
+
 	while(1) {
 		cout << "$ ";
 
