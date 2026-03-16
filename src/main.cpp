@@ -9,6 +9,8 @@ using std :: cerr;
 using std :: string;
 using std :: endl;
 
+const std :: vector<string> BUILTIN_COMMANDS = {"echo", "exit", "type"};
+
 int skip_ws(int i, const string &input) { // skip white spaces
 	while(i < input.size() && input[i] == ' ') {
 		i ++;
@@ -77,24 +79,42 @@ void print(int i, const string &input) {
     cout << endl;
 }
 
+void handle_type(int i, const string &input) {
+	i = skip_ws(i, input);
+	auto [_, token] = get_token(i, input);
+
+	for(auto &builtin : BUILTIN_COMMANDS) {
+		if(builtin == token) {
+			cout << token << " is a shell builtin" << endl;
+			return;
+		}
+	}
+
+	cout << token << ": not found" << endl;
+}
+
 void exe(const string &input) {
 	if(status(input) == 0) {
 		exit(0);
 	}
 
-	string first_token;
-
 	int i = 0;
+	string first_token;
 	
 	i = skip_ws(i, input);
-	std :: pair<int, string> ans = get_token(i, input);
-	i = ans.first;
+	auto [a, b] = get_token(i, input);
+
+	i = a;
+	first_token = b;
 
 	// doing the corresponded function
-	if(ans.second == "echo") {
+	if(first_token == "echo") {
 		print(i, input);
 		return;
-	}
+	} else if(first_token == "type") {
+		handle_type(i, input);
+		return;
+	}	
 
 	cout << input << ": command not found" << endl;
 }
