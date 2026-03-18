@@ -69,7 +69,11 @@ string find_directory(string &token, int type) {
 void handle_type(Tokenizer &tokenizer) {
     int pos = tokenizer.get_pos();
     string input = tokenizer.get_input();
+
+    // skip all the white spaces
+    pos = skip_ws(pos, input);
     string rem = input.substr(pos);
+
     string token = tokenizer.next();
     int cnt = count_words(input);
 
