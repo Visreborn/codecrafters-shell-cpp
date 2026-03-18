@@ -20,7 +20,7 @@ std :: pair<int, string> get_token(int i, const string &input) {
     return {i, tmp};
 }
 
-int count_words(const string& input) {
+int count_tokens(const string& input) { // this is for counting tokens that are separated by commas
     int count = 0;
     bool in_word = false; 
 
@@ -37,7 +37,7 @@ int count_words(const string& input) {
 }
 
 // constructor
-Tokenizer :: Tokenizer(string in) : input(in) {}
+Tokenizer :: Tokenizer(string in) : input(in), token_counts(count_tokens(in)) {}
 
 string Tokenizer :: next() {
     pos = skip_ws(pos, input);
@@ -53,4 +53,8 @@ string Tokenizer :: get_input() const {
 
 int Tokenizer :: get_pos() const {
     return pos;
+}
+
+int Tokenizer :: get_count() const { // token counts
+    return token_counts;
 }

@@ -19,7 +19,7 @@ using std::endl;
 #endif
 
 // hidden global variables
-const std::vector<string> BUILTIN_COMMANDS = {"echo", "exit", "type"};
+const std::vector<string> BUILTIN_COMMANDS = {"echo", "exit", "type", "pwd"};
 std::vector<string> FETCH_PATH;
 
 // --- PRIVATE FUNCTIONS ---
@@ -47,9 +47,9 @@ void print(Tokenizer &tokenizer) {
 string find_directory(string &token, int type) {
     for(const auto &path : FETCH_PATH) {
 
-        if(!std::filesystem::exists(path)) continue;
+        if(!std :: filesystem :: exists(path)) continue;
 
-        for(const auto &entry : std::filesystem::directory_iterator(path)) {
+        for(const auto &entry : std :: filesystem :: directory_iterator(path)) {
             string absolute_path = entry.path().string();
             string file_name = entry.path().filename().string();
 
@@ -69,9 +69,13 @@ string find_directory(string &token, int type) {
 void handle_type(Tokenizer &tokenizer) {
     int pos = tokenizer.get_pos();
     string input = tokenizer.get_input();
+
+    // skip all the white spaces
+    pos = skip_ws(pos, input);
     string rem = input.substr(pos);
+
     string token = tokenizer.next();
-    int cnt = count_words(input);
+    int cnt = tokenizer.get_count();
 
     if(cnt == 2) {
         for(auto &builtin : BUILTIN_COMMANDS) {
@@ -133,6 +137,15 @@ void init_path() {
     }
 }
 
+void get_pwd() {
+    try {
+        std :: filesystem :: path current_path = std :: filesystem :: current_path();
+        cout << current_path.string() << endl;
+    } catch(const std :: filesystem :: filesystem_error& e) {
+        cerr << e.what() << endl;
+    }
+}
+
 void exe(const string &input) {
     // initializer Tokenizer
     Tokenizer tokenizer(input);
@@ -163,7 +176,12 @@ void exe(const string &input) {
         handle_type(tokenizer);
         return;
     } 
-    
+
+    if(first_token == "pwd" && tokenizer.get_count() == 1) {
+        get_pwd();
+        return;
+    } 
+
     if(run_external_programs(first_token, tokenizer)) {
         // cout << endl;
         return;
