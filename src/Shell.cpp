@@ -95,7 +95,7 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
     string res = find_directory(first_token); 
 
     if(res.size() > 0) {    
-        string full_command = "\"" + res + "\"";
+        string full_command = res;
 
         while(1) {
             string arg = tokenizer.next();
@@ -159,7 +159,7 @@ void exe(const string &input) {
     } 
     
     if(run_external_programs(first_token, tokenizer)) {
-        cout << endl;
+        // cout << endl;
         return;
     }
 
