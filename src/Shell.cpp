@@ -106,6 +106,8 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
 
         // cout << full_command << endl;
 
+        full_command = "\"" + full_command + "\"";
+
         std :: system(full_command.c_str());
         return 1;
     }
