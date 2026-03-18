@@ -39,39 +39,12 @@ int count_words(const string& input) {
 // constructor
 Tokenizer :: Tokenizer(string in) : input(in) {}
 
-string Tokenizer::next() {
+string Tokenizer :: next() {
     pos = skip_ws(pos, input);
-    if (pos >= input.size()) return "";
-
-    string result = "";
-    bool in_double_quotes = false;
-
-    while (pos < input.size()) {
-        char c = input[pos];
-
-        if (c == '\\' && pos + 1 < input.size()) {
-            if (input[pos + 1] == '"') {
-                result += '"';
-                pos += 2; 
-                continue;
-            }
-        }
-
-        if (c == '"') {
-            in_double_quotes = !in_double_quotes;
-            // result += "\"";
-        } 
-        else if (c == ' ' && !in_double_quotes) {
-            break; 
-        } 
-        else {
-            result += c;
-        }
-        
-        pos ++;
-    }
-
-    return result;
+    if (pos == input.size()) return "";
+    auto [next_pos, token] = get_token(pos, input);
+    pos = next_pos;
+    return token;
 }
 
 string Tokenizer :: get_input() const {
