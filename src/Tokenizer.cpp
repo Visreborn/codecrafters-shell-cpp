@@ -59,7 +59,7 @@ string Tokenizer::next() {
 
         if (c == '"') {
             in_double_quotes = !in_double_quotes;
-            result += "\"";
+            // result += "\"";
         } 
         else if (c == ' ' && !in_double_quotes) {
             break; 
