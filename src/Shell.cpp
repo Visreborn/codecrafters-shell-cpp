@@ -44,7 +44,7 @@ void print(Tokenizer &tokenizer) {
     cout << endl;
 }
 
-string find_directory(string &token) {
+string find_directory(string &token, int type) {
     for(const auto &path : FETCH_PATH) {
 
         if(!std::filesystem::exists(path)) continue;
@@ -54,7 +54,11 @@ string find_directory(string &token) {
             string file_name = entry.path().filename().string();
 
             if((file_name == token || file_name == token + ".exe") && IsExecutable(absolute_path)) {
-                return absolute_path;
+                if(type == 0) {
+                    return absolute_path;
+                } else {
+                    return file_name;
+                }
             }
         }
     }
@@ -81,7 +85,7 @@ void handle_type(Tokenizer &tokenizer) {
     // get the remainings to see if they form an executable file
     token = rem;
     
-    string res = find_directory(token);
+    string res = find_directory(token, 0);
 
     if(res.size() > 0) {
         cout << token << " is " << res << endl;
@@ -92,10 +96,10 @@ void handle_type(Tokenizer &tokenizer) {
 }
 
 bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
-    string res = find_directory(first_token); 
+    string res = find_directory(first_token, 1); 
 
     if(res.size() > 0) {    
-        string full_command = res;
+        string full_command = "\"" + res + "\"";
 
         while(1) {
             string arg = tokenizer.next();
@@ -159,7 +163,7 @@ void exe(const string &input) {
     } 
     
     if(run_external_programs(first_token, tokenizer)) {
-        // cout << endl;
+        cout << endl;
         return;
     }
 
