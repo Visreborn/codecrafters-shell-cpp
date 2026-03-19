@@ -16,8 +16,10 @@ namespace fs = std :: filesystem;
 
 #if defined(_WIN32)
     const char PATH_DELIMETER = ';';
+    const char DIRECTORY_DELIMETER = '\\';
 #else
     const char PATH_DELIMETER = ':';
+    const char DIRECTORY_DELIMETER = '/';
 #endif
 
 // hidden global variables
@@ -133,16 +135,63 @@ void pwd() {
 
 void changeCWD(Tokenizer &tokenizer) { // change Current Working Directory
     string tmp = tokenizer.next();
-    fs :: path abs_path(tmp);
 
-    if(!fs :: exists(abs_path)) {
+    // we convert tmp to a be a path
+    fs :: path CurrentPath(tmp);
+
+    std :: stringstream ss(tmp);
+    std :: vector<string> store;
+    string ans;
+
+    // get the CWD
+    fs :: path CWD = fs :: current_path();
+
+    while(getline(ss, ans, DIRECTORY_DELIMETER)) {
+        store.push_back(ans);
+    }   
+
+    if(store[0] == "~") {
+        const char* homeDir = std :: getenv("HOME");
+        fs :: current_path(homeDir);
+        return;
+    }
+
+    if(store[0] + DIRECTORY_DELIMETER == CWD.root_path().string()) { // change the CWD
+        if(!fs :: exists(CurrentPath)) {
+            cout << "cd: " << tmp << ": No such file or directory" << endl;
+            return;
+        }
+
+        fs :: current_path(CurrentPath);
+        return;
+    }
+
+    if(store[0] == "..") {
+        fs :: path new_path = CWD;
+
+        for(int i = 0; i < store.size(); i ++) {
+            new_path = new_path.parent_path();
+        }
+
+        fs :: current_path(new_path);
+        return;
+    }
+
+    string tot_path = CWD.string();
+
+    for(int i = 0; i < store.size(); i ++) {
+        if(store[i] == ".") continue;
+        tot_path += DIRECTORY_DELIMETER + store[i];
+    }
+
+    fs :: path new_path(tot_path);
+
+    if(!fs :: exists(new_path)) {
         cout << "cd: " << tmp << ": No such file or directory" << endl;
         return;
     }
 
-    // change the CWD
-    fs :: current_path(abs_path);
-    return;
+    fs :: current_path(new_path);
 }
 
 // --- PUBLIC FUNCTIONS ---
