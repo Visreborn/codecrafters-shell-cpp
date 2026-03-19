@@ -12,6 +12,8 @@ using std::cerr;
 using std::string;
 using std::endl;
 
+namespace fs = std :: filesystem;
+
 #if defined(_WIN32)
     const char PATH_DELIMETER = ';';
 #else
@@ -47,9 +49,9 @@ void print(Tokenizer &tokenizer) {
 string find_directory(string &token, int type) {
     for(const auto &path : FETCH_PATH) {
 
-        if(!std :: filesystem :: exists(path)) continue;
+        if(!fs :: exists(path)) continue;
 
-        for(const auto &entry : std :: filesystem :: directory_iterator(path)) {
+        for(const auto &entry : fs :: directory_iterator(path)) {
             string absolute_path = entry.path().string();
             string file_name = entry.path().filename().string();
 
@@ -120,6 +122,29 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
     return 0;
 }
 
+void pwd() {
+    try {
+        fs :: path current_path = fs :: current_path();
+        cout << current_path.string() << endl;
+    } catch(const fs :: filesystem_error& e) {
+        cerr << e.what() << endl;
+    }
+}
+
+void changeCWD(Tokenizer &tokenizer) { // change Current Working Directory
+    string tmp = tokenizer.next();
+    fs :: path abs_path(tmp);
+
+    if(!fs :: exists(abs_path)) {
+        cout << "cd: " << tmp << ": No such file or directory" << endl;
+        return;
+    }
+
+    // change the CWD
+    fs :: current_path(abs_path);
+    return;
+}
+
 // --- PUBLIC FUNCTIONS ---
 
 void init_path() {
@@ -134,15 +159,6 @@ void init_path() {
         if(dir.size() > 0) {
             FETCH_PATH.push_back(dir);
         }
-    }
-}
-
-void get_pwd() {
-    try {
-        std :: filesystem :: path current_path = std :: filesystem :: current_path();
-        cout << current_path.string() << endl;
-    } catch(const std :: filesystem :: filesystem_error& e) {
-        cerr << e.what() << endl;
     }
 }
 
@@ -178,12 +194,16 @@ void exe(const string &input) {
     } 
 
     if(first_token == "pwd" && tokenizer.get_count() == 1) {
-        get_pwd();
+        pwd();
         return;
     } 
 
+    if(first_token == "cd") {
+        changeCWD(tokenizer);
+        return;
+    }
+
     if(run_external_programs(first_token, tokenizer)) {
-        // cout << endl;
         return;
     }
 
