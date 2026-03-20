@@ -107,7 +107,7 @@ void handle_type(Tokenizer &tokenizer) {
 }
 
 bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
-    string res = find_directory(first_token, 0); 
+    string res = find_directory(first_token, 1); 
 
     if(res.size() > 0) {    
         string full_command = "\"" + res + "\"";
