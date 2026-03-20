@@ -241,7 +241,7 @@ void cat(std :: vector<string> &args) {
         string line;
 
         while(getline(file, line)) {
-            cout << line << '\n';
+            cout << line;
         }
 
         file.close();
