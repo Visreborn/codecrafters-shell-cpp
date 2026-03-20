@@ -7,19 +7,21 @@
 #include <cstdlib>
 #include <sstream>
 
-using std::cout;
-using std::cerr;
-using std::string;
-using std::endl;
+using std :: cout;
+using std :: cerr;
+using std :: string;
+using std :: endl;
 
 namespace fs = std :: filesystem;
 
 #if defined(_WIN32)
     const char PATH_DELIMETER = ';';
     const char DIRECTORY_DELIMETER = '\\';
+    const string HOME = "USERPROFILE";
 #else
     const char PATH_DELIMETER = ':';
     const char DIRECTORY_DELIMETER = '/';
+    const string HOME = "HOME";
 #endif
 
 // hidden global variables
@@ -112,10 +114,16 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
         while(1) {
             string arg = tokenizer.next();
             if(arg == "") break;
-            full_command += " " + arg;
+
+            if (arg.find(' ') != string::npos) {
+                full_command += " \"" + arg + "\"";
+            } else {
+                full_command += " " + arg;
+            }
         }
 
-        // full_command = "\"" + full_command  + "\"";
+        full_command = "\"" + full_command  + "\"";
+        cerr << full_command << endl;
 
         std :: system(full_command.c_str());
         return 1;
@@ -150,9 +158,30 @@ void changeCWD(Tokenizer &tokenizer) { // change Current Working Directory
         store.push_back(ans);
     }   
 
-    if(store[0] == "~") {
-        const char* homeDir = std :: getenv("HOME");
-        fs :: current_path(homeDir);
+    if(store[0] == "~" && store.size() == 1) {
+        string finalHomePath = "";
+
+    #if defined(_WIN32)
+        const char* homeDrive = std :: getenv("HOMEDRIVE");
+        const char* homePath = std :: getenv("HOMEPATH");
+        
+        if (homeDrive != nullptr && homePath != nullptr) {
+            finalHomePath = string(homeDrive) + string(homePath);
+        }
+    #else
+        const char* homeEnv = std :: getenv("HOME");
+
+        if (homeEnv != nullptr) {
+            finalHomePath = homeEnv;
+        }
+    #endif
+
+        if (finalHomePath.empty()) {
+            std :: cout << "cd: could not determine home directory" << std::endl;
+            return;
+        }
+
+        fs :: current_path(finalHomePath);
         return;
     }
 
@@ -200,9 +229,9 @@ void init_path() {
     const char *path_env = std::getenv("PATH");
     if(path_env == nullptr) return;
 
-    std::string path_str(path_env);
-    std::stringstream ss(path_str);
-    std::string dir;
+    string path_str(path_env);
+    std :: stringstream ss(path_str);
+    string dir;
 
     while(getline(ss, dir, PATH_DELIMETER)) {
         if(dir.size() > 0) {

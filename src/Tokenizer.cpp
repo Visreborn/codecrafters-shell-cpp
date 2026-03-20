@@ -6,14 +6,31 @@ int skip_ws(int i, const string &input) {
     while(i < input.size() && input[i] == ' ') {
         i ++;
     }
+
     return i;
 }
 
 std :: pair<int, string> get_token(int i, const string &input) {
+    bool in_single_quotes = 0;
     string tmp;
 
-    while(i < input.size() && input[i] != ' ') {
-        tmp += input[i];
+    while(i < input.size()) {
+        if(input[i] == '\'') {
+            in_single_quotes ^= 1;
+        }
+        
+        else if(input[i] == ' ') {
+            if(in_single_quotes) {
+                tmp += ' ';
+            } else {
+                break;
+            }
+        }
+
+        else {
+            tmp += input[i];
+        }
+
         i ++;
     }
 
@@ -22,14 +39,26 @@ std :: pair<int, string> get_token(int i, const string &input) {
 
 int count_tokens(const string& input) { // this is for counting tokens that are separated by commas
     int count = 0;
-    bool in_word = false; 
+    bool in_token = 0;
+    bool in_single_quotes = 0;
 
     for (char c : input) {
-        if (c == ' ') {
-            in_word = false; 
-        } else if (!in_word) {
-            in_word = true;  
-            count ++;         
+        if(c == '\'') {
+            in_single_quotes ^= 1;
+
+            if(!in_token) {
+                in_token = 1;
+                count ++;
+            }
+        } 
+
+        else if(c == ' ' && !in_single_quotes) {
+            in_token = 0;
+        }
+
+        else if(!in_token) {
+            count ++;
+            in_token = 1;
         }
     }
 
