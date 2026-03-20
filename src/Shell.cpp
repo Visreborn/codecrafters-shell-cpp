@@ -253,6 +253,7 @@ void cat(std :: vector<string> &args) {
 // --- PUBLIC FUNCTIONS ---
 
 void init_path() {
+    FETCH_PATH.clear();
     const char *path_env = std::getenv("PATH");
     if(path_env == nullptr) return;
 

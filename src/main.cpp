@@ -13,9 +13,9 @@ int main() {
     cerr << std :: unitbuf;
 
 	// called this from shell.hpp
-    init_path();
 
     while(1) {
+        init_path();
         cout << "$ ";
 
         string input;
