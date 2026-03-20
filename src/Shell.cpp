@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <fstream>
+#include<process.h>
 
 using std :: cout;
 using std :: cerr;
@@ -106,30 +107,40 @@ void handle_type(Tokenizer &tokenizer) {
     cout << token << ": not found" << endl;
 }
 
+#include <process.h> // Đối với Windows (_spawnvp)
+#include <vector>
+
 bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
-    string res = find_directory(first_token, 1); 
+    string cmd_path = find_directory(first_token, 0); // Lấy đường dẫn tuyệt đối
 
-    if(res.size() > 0) {    
-        string full_command = "\"" + res + "\"";
+    if(!cmd_path.empty()) {
+        // Tạo danh sách argument dạng mảng (argv style)
+        std::vector<string> args_str;
+        args_str.push_back(first_token); // argv[0] thường là tên lệnh
 
-        while(1) {
+        while(true) {
             string arg = tokenizer.next();
             if(arg == "") break;
-
-            if (arg.find(' ') != string::npos) {
-                full_command += " \"" + arg + "\"";
-            } else {
-                full_command += " " + arg;
-            }
+            args_str.push_back(arg); // Add thẳng, KHÔNG CẦN BỌC NHÁI
         }
 
-        // cerr << full_command << endl;
+        // Chuyển vector<string> sang char* array (kiểu C cũ)
+        std::vector<const char*> argv;
+        for (const auto& s : args_str) argv.push_back(s.c_str());
+        argv.push_back(NULL); // Kết thúc mảng bằng NULL
 
-        std :: system(full_command.c_str());
-        return 1;
+        // CHẠY TRỰC TIẾP (Bỏ qua system() và cmd.exe)
+        #if defined(_WIN32)
+            _spawnvp(_P_WAIT, cmd_path.c_str(), (char* const*)argv.data());
+        #else
+            // Trên Linux bạn dùng fork + execvp hoặc posix_spawn
+            // Đây là ví dụ đơn giản với spawnvp tương đương trên nhiều nền tảng
+            _spawnvp(_P_WAIT, cmd_path.c_str(), (char* const*)argv.data());
+        #endif
+
+        return true;
     }
-
-    return 0;
+    return false;
 }
 
 void pwd() {
