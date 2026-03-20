@@ -246,6 +246,8 @@ void cat(std :: vector<string> &args) {
 
         file.close();
     }
+
+    cout << endl;
 }
 
 // --- PUBLIC FUNCTIONS ---
