@@ -121,7 +121,13 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
         while(true) {
             string arg = tokenizer.next();
             if(arg == "") break;
+
+            if (arg.find(' ') != string::npos) {
+                arg = "\"" + arg + "\"";
+            }
+
             args_str.push_back(arg); // Add thẳng, KHÔNG CẦN BỌC NHÁI
+            cerr << arg << endl;
         }
 
         // Chuyển vector<string> sang char* array (kiểu C cũ)
