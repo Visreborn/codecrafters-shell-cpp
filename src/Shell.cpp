@@ -111,7 +111,7 @@ void handle_type(Tokenizer &tokenizer) {
 #include <vector>
 
 bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
-    string cmd_path = find_directory(first_token, 0); // Lấy đường dẫn tuyệt đối
+    string cmd_path = find_directory(first_token, 1); // Lấy đường dẫn tuyệt đối
 
     if(!cmd_path.empty()) {
         // Tạo danh sách argument dạng mảng (argv style)
