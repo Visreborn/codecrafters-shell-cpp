@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <cstdlib>
 #include <sstream>
+#include <fstream>
 
 using std :: cout;
 using std :: cerr;
@@ -123,7 +124,7 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
         }
 
         full_command = "\"" + full_command  + "\"";
-        cerr << full_command << endl;
+        // cerr << full_command << endl;
 
         std :: system(full_command.c_str());
         return 1;
@@ -223,6 +224,30 @@ void changeCWD(Tokenizer &tokenizer) { // change Current Working Directory
     fs :: current_path(new_path);
 }
 
+void cat(std :: vector<string> &args) {
+    if(args.empty()) {
+        cout << "cat: missing file operand" << endl;
+        return;
+    } 
+
+    for(const auto &filename : args) {
+        std :: ifstream file(filename);
+
+        if(!file.is_open()) {
+            cout << "cat: " << filename << ": No such file or directory" << endl;
+            continue;  
+        }
+
+        string line;
+
+        while(getline(file, line)) {
+            cout << line << '\n';
+        }
+
+        file.close();
+    }
+}
+
 // --- PUBLIC FUNCTIONS ---
 
 void init_path() {
@@ -278,6 +303,19 @@ void exe(const string &input) {
 
     if(first_token == "cd") {
         changeCWD(tokenizer);
+        return;
+    }
+
+    if(first_token == "cat") {
+        std :: vector<string> args;
+        
+        while(1) {
+            string arg = tokenizer.next();
+            if (arg == "") break;
+            args.push_back(arg);
+        }
+        
+        cat(args);
         return;
     }
 
