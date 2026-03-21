@@ -254,7 +254,7 @@ void cat(std :: vector<string> &args) {
     } 
 
     for(const auto &filename : args) {
-        cerr << filename << endl;
+        // cerr << filename << endl;
         std :: ifstream file(filename);
 
         if(!file.is_open()) {

@@ -66,10 +66,17 @@ std :: pair<int, string> get_token(int i, const string &input) {
         else if(input[i] == '\\') {
             if(!in_double_quotes && !in_single_quotes && !literal) {
                 literal = 1;
+            } else if(literal == '\\') {
+                literal = 0;
+                tmp += input[i];
             }
         }
 
         else {
+            if(literal == 1) {
+                literal = 0;
+            }
+            
             tmp += input[i];
         }
 
