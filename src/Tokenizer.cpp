@@ -1,6 +1,9 @@
 #include "Tokenizer.hpp"
+#include<iostream>
 
 using std :: string;
+using std :: cerr;
+using std :: endl;
 
 int skip_ws(int i, const string &input) {
     while(i < input.size() && input[i] == ' ') {
@@ -13,26 +16,56 @@ int skip_ws(int i, const string &input) {
 std :: pair<int, string> get_token(int i, const string &input) {
     bool in_single_quotes = 0;
     bool in_double_quotes = 0;
+    bool literal = 0;
     string tmp;
 
     while(i < input.size()) {
+        // cerr << input[i] << ' ' << in_double_quotes << ' ' << in_single_quotes << endl;
+
         if(input[i] == '\'') {
-            if(!in_double_quotes) {
+            if(literal == 1) {
+                literal = 0;
+                tmp += input[i];
+            }
+
+            else if(!in_double_quotes) {
                 in_single_quotes ^= 1;
-            } else {
+            } 
+            
+            else {
                 tmp += input[i];
             }
         } 
 
         else if(input[i] == '\"') {
-            in_double_quotes ^= 1;
+            if(literal == 1) {
+                tmp += input[i];
+                literal = 0;
+            } 
+
+            else {
+                in_double_quotes ^= 1;
+            }
         }
         
         else if(input[i] == ' ') {
             if(in_single_quotes || in_double_quotes) {
                 tmp += ' ';
-            } else {
+            }
+             
+            else if(literal == 1) {
+                tmp += ' ';    
+                literal = 0;
+            }
+            
+            else {
                 break;
+            }
+        }
+
+        else if(input[i] == '\\') {
+            if(!in_double_quotes && !in_single_quotes && !literal) {
+                literal = 1;
             }
         }
 
