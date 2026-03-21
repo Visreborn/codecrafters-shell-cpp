@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <sstream>
 #include <fstream>
-#include<process.h>
 
 using std :: cout;
 using std :: cerr;
@@ -20,10 +19,13 @@ namespace fs = std :: filesystem;
     const char PATH_DELIMETER = ';';
     const char DIRECTORY_DELIMETER = '\\';
     const string HOME = "USERPROFILE";
+    #include <process.h>
 #else
     const char PATH_DELIMETER = ':';
     const char DIRECTORY_DELIMETER = '/';
     const string HOME = "HOME";
+    #include <unistd.h>    // Cho fork, execvp
+    #include <sys/wait.h>  // Cho waitpid
 #endif
 
 // hidden global variables
@@ -133,7 +135,23 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
         for (const auto& s : args_str) argv.push_back(s.c_str());
         argv.push_back(NULL); 
 
-        _spawnvp(_P_WAIT, cmd_path.c_str(), (char* const*)argv.data());
+        #if defined(_WIN32)
+            _spawnvp(_P_WAIT, cmd_path.c_str(), (char* const*)argv.data());
+        #else
+            pid_t pid = fork();
+
+            if (pid == 0) {
+                execvp(argv[0], (char* const*)argv.data());
+                
+                perror("execvp"); 
+                exit(1);
+            } else if (pid > 0) {
+                int status;
+                waitpid(pid, &status, 0);
+            } else {
+                perror("fork");
+            }
+        #endif
 
         return 1;
     }
