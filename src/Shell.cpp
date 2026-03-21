@@ -109,9 +109,6 @@ void handle_type(Tokenizer &tokenizer) {
     cout << token << ": not found" << endl;
 }
 
-#include <process.h> // Đối với Windows (_spawnvp)
-#include <vector>
-
 bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
     string cmd_path = find_directory(first_token, 1); 
 
@@ -128,7 +125,7 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
             }
 
             args_str.push_back(arg); 
-            cerr << arg << endl;
+            // cerr << arg << endl;
         }
 
         std :: vector<const char*> argv;
