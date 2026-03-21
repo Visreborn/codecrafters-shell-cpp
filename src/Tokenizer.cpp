@@ -43,8 +43,12 @@ std :: pair<int, string> get_token(int i, const string &input) {
                 literal = 0;
             } 
 
-            else {
+            else if(!in_single_quotes) {
                 in_double_quotes ^= 1;
+            }
+
+            else {
+                tmp += input[i];
             }
         }
         
@@ -68,6 +72,8 @@ std :: pair<int, string> get_token(int i, const string &input) {
                 literal = 1;
             } else if(literal == 1) {
                 literal = 0;
+                tmp += input[i];
+            } else if(in_single_quotes) {
                 tmp += input[i];
             }
         }
