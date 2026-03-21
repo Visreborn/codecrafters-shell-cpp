@@ -12,15 +12,24 @@ int skip_ws(int i, const string &input) {
 
 std :: pair<int, string> get_token(int i, const string &input) {
     bool in_single_quotes = 0;
+    bool in_double_quotes = 0;
     string tmp;
 
     while(i < input.size()) {
         if(input[i] == '\'') {
-            in_single_quotes ^= 1;
+            if(!in_double_quotes) {
+                in_single_quotes ^= 1;
+            } else {
+                tmp += input[i];
+            }
+        } 
+
+        else if(input[i] == '\"') {
+            in_double_quotes ^= 1;
         }
         
         else if(input[i] == ' ') {
-            if(in_single_quotes) {
+            if(in_single_quotes || in_double_quotes) {
                 tmp += ' ';
             } else {
                 break;
@@ -41,10 +50,13 @@ int count_tokens(const string& input) { // this is for counting tokens that are 
     int count = 0;
     bool in_token = 0;
     bool in_single_quotes = 0;
+    bool in_double_quotes = 0;
 
     for (char c : input) {
         if(c == '\'') {
-            in_single_quotes ^= 1;
+            if(!in_double_quotes) {
+                in_single_quotes ^= 1;
+            }
 
             if(!in_token) {
                 in_token = 1;
@@ -52,7 +64,16 @@ int count_tokens(const string& input) { // this is for counting tokens that are 
             }
         } 
 
-        else if(c == ' ' && !in_single_quotes) {
+        else if(c == '\"') {
+            in_double_quotes ^= 1;
+
+            if(!in_token) {
+                in_token = 1;
+                count ++;
+            }
+        }
+
+        else if(c == ' ' && !in_single_quotes && !in_double_quotes) {
             in_token = 0;
         }
 

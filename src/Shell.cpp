@@ -111,12 +111,11 @@ void handle_type(Tokenizer &tokenizer) {
 #include <vector>
 
 bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
-    string cmd_path = find_directory(first_token, 1); // Lấy đường dẫn tuyệt đối
+    string cmd_path = find_directory(first_token, 1); 
 
     if(!cmd_path.empty()) {
-        // Tạo danh sách argument dạng mảng (argv style)
-        std::vector<string> args_str;
-        args_str.push_back(first_token); // argv[0] thường là tên lệnh
+        std :: vector<string> args_str;
+        args_str.push_back(first_token); 
 
         while(true) {
             string arg = tokenizer.next();
@@ -126,27 +125,20 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
                 arg = "\"" + arg + "\"";
             }
 
-            args_str.push_back(arg); // Add thẳng, KHÔNG CẦN BỌC NHÁI
+            args_str.push_back(arg); 
             cerr << arg << endl;
         }
 
-        // Chuyển vector<string> sang char* array (kiểu C cũ)
-        std::vector<const char*> argv;
+        std :: vector<const char*> argv;
         for (const auto& s : args_str) argv.push_back(s.c_str());
-        argv.push_back(NULL); // Kết thúc mảng bằng NULL
+        argv.push_back(NULL); 
 
-        // CHẠY TRỰC TIẾP (Bỏ qua system() và cmd.exe)
-        #if defined(_WIN32)
-            _spawnvp(_P_WAIT, cmd_path.c_str(), (char* const*)argv.data());
-        #else
-            // Trên Linux bạn dùng fork + execvp hoặc posix_spawn
-            // Đây là ví dụ đơn giản với spawnvp tương đương trên nhiều nền tảng
-            _spawnvp(_P_WAIT, cmd_path.c_str(), (char* const*)argv.data());
-        #endif
+        _spawnvp(_P_WAIT, cmd_path.c_str(), (char* const*)argv.data());
 
-        return true;
+        return 1;
     }
-    return false;
+
+    return 0;
 }
 
 void pwd() {
