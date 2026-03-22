@@ -20,7 +20,6 @@ std :: pair<int, string> get_token(int i, const string &input) {
     string tmp;
 
     while(i < input.size()) {
-        // cerr << input[i] << ' ' << in_double_quotes << ' ' << in_single_quotes << endl;
 
         if(input[i] == '\'') {
             if(literal == 1) {
@@ -97,6 +96,7 @@ std :: pair<int, string> get_token(int i, const string &input) {
     return {i, tmp};
 }
 
+// quite outdated, i need to revise and fix it soon enough
 int count_tokens(const string& input) { // this is for counting tokens that are separated by commas
     int count = 0;
     bool in_token = 0;

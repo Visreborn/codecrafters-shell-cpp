@@ -132,12 +132,18 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
                 break;
             }
 
+            if(arg == "2>>") {
+                redirect_file = tokenizer.next();
+                type = 2;
+                mode = 1;
+                break;
+            }
+
             if (arg.find(' ') != string::npos) {
                 arg = "\"" + arg + "\"";
             }
 
             args_str.push_back(arg); 
-            // cerr << arg << endl;
         }
 
         std :: vector<const char*> argv;

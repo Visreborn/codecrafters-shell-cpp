@@ -50,6 +50,13 @@ void print(Tokenizer &tokenizer) {
             type = 1;
             mode = 1;
             break;
+        } 
+
+        if(cur_token == "2>>") {
+            redirect_file = tokenizer.next();
+            type = 2;
+            mode = 1;
+            break;
         }
 
         tokens.push_back(cur_token);
@@ -90,7 +97,7 @@ void cat(std :: vector<string> &args) {
             break;
         }
 
-        else if(args[i] == "2>") {
+        if(args[i] == "2>") {
             if(i + 1 < n) {
                 redirect_file = args[i + 1];
                 type = 2;
@@ -100,10 +107,21 @@ void cat(std :: vector<string> &args) {
             break;
         }
 
-        else if(args[i] == "1>>" || args[i] == ">>") {
+        if(args[i] == "1>>" || args[i] == ">>") {
             if(i + 1 < n) {
                 redirect_file = args[i + 1];
                 type = 1;
+                mode = 1;
+            }
+
+            n = i;
+            break;
+        }
+
+        if(args[i] == "2>>") {
+            if(i + 1 < n) {
+                redirect_file = args[i + 1];
+                type = 2;
                 mode = 1;
             }
 
