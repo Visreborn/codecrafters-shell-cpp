@@ -38,17 +38,17 @@ std :: pair<int, string> get_token(int i, const string &input) {
         } 
 
         else if(input[i] == '\"') {
-            if(literal == 1) {
+            if(in_single_quotes) {
                 tmp += input[i];
-                literal = 0;
             } 
 
-            else if(!in_single_quotes) {
-                in_double_quotes ^= 1;
+            else if(literal == 1) {
+                tmp += input[i];
+                literal = 0;
             }
 
             else {
-                tmp += input[i];
+                in_double_quotes ^= 1;
             }
         }
         
@@ -68,14 +68,19 @@ std :: pair<int, string> get_token(int i, const string &input) {
         }
 
         else if(input[i] == '\\') {
-            if(!in_double_quotes && !in_single_quotes && !literal) {
-                literal = 1;
-            } else if(literal == 1) {
-                literal = 0;
-                tmp += input[i];
-            } else if(in_single_quotes) {
+            // if not in single quotes then it is either in double quotes or outside 
+            if(in_single_quotes) { 
                 tmp += input[i];
             }
+
+            else if(!literal) {
+                literal = 1;
+            }
+            
+            else if(literal == 1) {
+                literal = 0;
+                tmp += input[i];
+            } 
         }
 
         else {
