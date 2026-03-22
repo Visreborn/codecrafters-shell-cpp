@@ -19,9 +19,15 @@ struct Redirector {
     
     bool active = 0;
 
-    // flag[0] -> overwrite
-    // flag[1] -> append
-    int flag[2] = {_O_TRUNC, _O_APPEND};
+    #if defined(_WIN32)
+        // flag[0] -> overwrite
+        // flag[1] -> append
+        int flag[2] = {_O_TRUNC, _O_APPEND};
+    #else
+        // flag[0] -> overwrite
+        // flag[1] -> append
+        int flag[2] = {O_TRUNC, O_APPEND};
+    #endif
 
     void setup(const std :: string &filename, int fd_to_redirect, int mode) {    
         if(filename.empty()) return;
