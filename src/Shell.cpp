@@ -125,10 +125,11 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
                 break;
             }
 
-            else if(arg == ">>" || arg == "1>>") {
+            if(arg == ">>" || arg == "1>>") {
                 redirect_file = tokenizer.next();
                 type = 1;
                 mode = 1;
+                break;
             }
 
             if (arg.find(' ') != string::npos) {
