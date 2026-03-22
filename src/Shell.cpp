@@ -359,11 +359,13 @@ void cat(std :: vector<string> &args) {
             continue;
         }
 
-        string line;
+        // string line;
 
-        while(getline(file, line)) {
-            cout << line << '\n';
-        }
+        // while(getline(file, line)) {
+        //     cout << line << '\n';
+        // }
+
+        cout << file.rdbuf();
 
         file.close();
     }
