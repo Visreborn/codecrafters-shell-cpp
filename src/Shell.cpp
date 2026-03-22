@@ -362,7 +362,7 @@ void cat(std :: vector<string> &args) {
         string line;
 
         while(getline(file, line)) {
-            cout << line;
+            cout << line << '\n';
         }
 
         file.close();
