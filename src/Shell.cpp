@@ -1,5 +1,6 @@
 #include "Shell.hpp"
 #include "Tokenizer.hpp"
+#include "Commands.hpp"
 #include <iostream>
 #include <vector>
 #include <unistd.h>
@@ -35,90 +36,8 @@ std::vector<string> FETCH_PATH;
 
 // --- PRIVATE FUNCTIONS ---
 
-struct Redirector {
-    int saved_stdout = -1;
-    bool active = false;
-
-    void setup(const string& filename) {
-        if (filename.empty()) return;
-        
-        // Đẩy hết dữ liệu cũ ra màn hình trước khi đổi ống dẫn
-        cout.flush(); 
-
-        #if defined(_WIN32)
-            // _O_TRUNC giúp ghi đè file cũ nếu đã tồn tại
-            int fd = _open(filename.c_str(), _O_WRONLY | _O_CREAT | _O_TRUNC, 0666);
-
-            if (fd != -1) {
-                saved_stdout = _dup(1);   // save the current standard output
-                _dup2(fd, 1);             // points to the file
-                _close(fd);
-                active = true;
-            }
-
-        #else
-            int fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-
-            if (fd != -1) {
-                saved_stdout = dup(1);
-                dup2(fd, 1);
-                close(fd);
-                active = true;
-            }
-
-        #endif
-        
-        if (!active) {
-            cerr << "shell: " << filename << ": No such file or directory\n";
-        }
-    }
-
-    void restore() {
-        if (active && saved_stdout != -1) {
-            cout.flush(); 
-
-            #if defined(_WIN32)
-                _dup2(saved_stdout, 1);   // Points the pipeline back to the terminal
-                _close(saved_stdout);
-            #else
-                dup2(saved_stdout, 1);
-                close(saved_stdout);
-            #endif
-            active = false;
-        }
-    }
-};
-
 bool IsExecutable(const string &path) {
     return access(path.c_str(), X_OK) == 0;
-}
-
-void print(Tokenizer &tokenizer) {
-    std :: vector<string> tokens;
-    string redirect_file = "";
-
-    while(1) { 
-        string cur_token = tokenizer.next();    
-        if(cur_token == "") break;
-
-        if(cur_token == ">" || cur_token == "1>") {
-            redirect_file = tokenizer.next();
-            break;
-        }
-
-        tokens.push_back(cur_token);
-    }
-
-    Redirector redir;
-    redir.setup(redirect_file);
-
-    for(auto &token : tokens) {
-        cout << token << ' ';
-    }
-
-    cout << endl;
-
-    redir.restore();
 }
 
 string find_directory(string &token, int type) {
@@ -183,6 +102,7 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
         std :: vector<string> args_str;
         args_str.push_back(first_token); 
         string redirect_file = "";
+        int type = 1;
 
         while(true) {
             string arg = tokenizer.next();
@@ -190,6 +110,13 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
 
             if(arg == ">" || arg == "1>") {
                 redirect_file = tokenizer.next();
+                type = 1;
+                break;
+            } 
+
+            if(arg == "2>") {
+                redirect_file = tokenizer.next();
+                type = 2;
                 break;
             }
 
@@ -207,7 +134,7 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
 
         // redirect standard ouput to a specific file
         Redirector redir;
-        redir.setup(redirect_file);
+        redir.setup(redirect_file, type);
 
         #if defined(_WIN32)
             _spawnvp(_P_WAIT, cmd_path.c_str(), (char* const*)argv.data());
@@ -234,143 +161,6 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
     }
 
     return 0;
-}
-
-void pwd() {
-    try {
-        fs :: path current_path = fs :: current_path();
-        cout << current_path.string() << endl;
-    } catch(const fs :: filesystem_error& e) {
-        cerr << e.what() << endl;
-    }
-}
-
-void changeCWD(Tokenizer &tokenizer) { // change Current Working Directory
-    string tmp = tokenizer.next();
-
-    // we convert tmp to a be a path
-    fs :: path CurrentPath(tmp);
-
-    std :: stringstream ss(tmp);
-    std :: vector<string> store;
-    string ans;
-
-    // get the CWD
-    fs :: path CWD = fs :: current_path();
-
-    while(getline(ss, ans, DIRECTORY_DELIMETER)) {
-        store.push_back(ans);
-    }   
-
-    if(store[0] == "~" && store.size() == 1) {
-        string finalHomePath = "";
-
-    #if defined(_WIN32)
-        const char* homeDrive = std :: getenv("HOMEDRIVE");
-        const char* homePath = std :: getenv("HOMEPATH");
-        
-        if (homeDrive != nullptr && homePath != nullptr) {
-            finalHomePath = string(homeDrive) + string(homePath);
-        }
-    #else
-        const char* homeEnv = std :: getenv("HOME");
-
-        if (homeEnv != nullptr) {
-            finalHomePath = homeEnv;
-        }
-    #endif
-
-        if (finalHomePath.empty()) {
-            std :: cout << "cd: could not determine home directory" << std::endl;
-            return;
-        }
-
-        fs :: current_path(finalHomePath);
-        return;
-    }
-
-    if(store[0] + DIRECTORY_DELIMETER == CWD.root_path().string()) { // change the CWD
-        if(!fs :: exists(CurrentPath)) {
-            cout << "cd: " << tmp << ": No such file or directory" << endl;
-            return;
-        }
-
-        fs :: current_path(CurrentPath);
-        return;
-    }
-
-    if(store[0] == "..") {
-        fs :: path new_path = CWD;
-
-        for(int i = 0; i < store.size(); i ++) {
-            new_path = new_path.parent_path();
-        }
-
-        fs :: current_path(new_path);
-        return;
-    }
-
-    string tot_path = CWD.string();
-
-    for(int i = 0; i < store.size(); i ++) {
-        if(store[i] == ".") continue;
-        tot_path += DIRECTORY_DELIMETER + store[i];
-    }
-
-    fs :: path new_path(tot_path);
-
-    if(!fs :: exists(new_path)) {
-        cout << "cd: " << tmp << ": No such file or directory" << endl;
-        return;
-    }
-
-    fs :: current_path(new_path);
-}
-
-void cat(std :: vector<string> &args) {
-    if(args.empty()) {
-        cerr << "cat: missing file operand" << endl;
-        return;
-    } 
-
-    // check if there is a redirection operator inside the argument
-    int n = args.size();
-    string redirect_file = "";
-
-    for(int i = 0; i < n; i ++) {
-        if(args[i] == ">" || args[i] == "1>") {
-            if(i + 1 < n) {
-                redirect_file = args[i + 1];
-            }
-
-            n = i;
-            break;
-        }
-    }
-
-    Redirector redir;
-    redir.setup(redirect_file);
-
-    for(int i = 0; i < n; i ++) {
-        std :: ifstream file(args[i]);
-
-        if(!file.is_open()) {
-            cerr << "cat: " << args[i] << ": No such file or directory" << endl;
-            continue;
-        }
-
-        // string line;
-
-        // while(getline(file, line)) {
-        //     cout << line << '\n';
-        // }
-
-        cout << file.rdbuf();
-
-        file.close();
-    }
-
-    redir.restore();
 }
 
 // --- PUBLIC FUNCTIONS ---
