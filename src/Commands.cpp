@@ -27,6 +27,7 @@ void print(Tokenizer &tokenizer) {
     std :: vector<string> tokens;
     string redirect_file = "";
     int type = 1;
+    int mode = 0;
 
     while(1) { 
         string cur_token = tokenizer.next();    
@@ -44,11 +45,18 @@ void print(Tokenizer &tokenizer) {
             break;
         }
 
+        if(cur_token == "1>>" || cur_token == ">>") {
+            redirect_file = tokenizer.next();
+            type = 1;
+            mode = 1;
+            break;
+        }
+
         tokens.push_back(cur_token);
     }
 
     Redirector redir;
-    redir.setup(redirect_file, type);
+    redir.setup(redirect_file, type, mode);
 
     for(auto &token : tokens) {
         cout << token << ' ';
@@ -69,6 +77,7 @@ void cat(std :: vector<string> &args) {
     int n = args.size();
     string redirect_file = "";
     int type = 1;
+    int mode = 0;
 
     for(int i = 0; i < n; i ++) {
         if(args[i] == ">" || args[i] == "1>") {
@@ -90,10 +99,21 @@ void cat(std :: vector<string> &args) {
             n = i;
             break;
         }
+
+        else if(args[i] == "1>>" || args[i] == ">>") {
+            if(i + 1 < n) {
+                redirect_file = args[i + 1];
+                type = 1;
+                mode = 1;
+            }
+
+            n = i;
+            break;
+        }
     }
 
     Redirector redir;
-    redir.setup(redirect_file, type);
+    redir.setup(redirect_file, type, mode);
 
     for(int i = 0; i < n; i ++) {
         std :: ifstream file(args[i]);

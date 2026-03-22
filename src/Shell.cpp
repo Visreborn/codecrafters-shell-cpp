@@ -101,8 +101,13 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
     if(!cmd_path.empty()) {
         std :: vector<string> args_str;
         args_str.push_back(first_token); 
+
         string redirect_file = "";
+
+        // default : stdout
         int type = 1;
+        // default : overwritten
+        int mode = 0;
 
         while(true) {
             string arg = tokenizer.next();
@@ -120,6 +125,12 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
                 break;
             }
 
+            else if(arg == ">>" || arg == "1>>") {
+                redirect_file = tokenizer.next();
+                type = 1;
+                mode = 1;
+            }
+
             if (arg.find(' ') != string::npos) {
                 arg = "\"" + arg + "\"";
             }
@@ -134,7 +145,7 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
 
         // redirect standard ouput to a specific file
         Redirector redir;
-        redir.setup(redirect_file, type);
+        redir.setup(redirect_file, type, mode);
 
         #if defined(_WIN32)
             _spawnvp(_P_WAIT, cmd_path.c_str(), (char* const*)argv.data());

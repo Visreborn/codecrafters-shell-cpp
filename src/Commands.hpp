@@ -1,7 +1,7 @@
 #pragma once
+#include "Tokenizer.hpp"
 #include<string>
 #include<vector>
-#include "Tokenizer.hpp"
 #include<fcntl.h>
 #include<iostream>
 
@@ -19,7 +19,11 @@ struct Redirector {
     
     bool active = 0;
 
-    void setup(const std :: string &filename, int fd_to_redirect) {    
+    // flag[0] -> overwrite
+    // flag[1] -> append
+    int flag[2] = {_O_TRUNC, _O_APPEND};
+
+    void setup(const std :: string &filename, int fd_to_redirect, int mode) {    
         if(filename.empty()) return;
 
         if(fd_to_redirect == 1) std :: cout.flush();
@@ -29,7 +33,7 @@ struct Redirector {
 
         #if defined(_WIN32)
             // _O_TRUNC helps overwrite existed files
-            int fd = _open(filename.c_str(), _O_WRONLY | _O_CREAT | _O_TRUNC, 0666);
+            int fd = _open(filename.c_str(), _O_WRONLY | _O_CREAT | flag[mode], 0666);
 
             if (fd != -1) {
                 saved_fd = _dup(target_fd);   // save the current standard output
@@ -39,7 +43,7 @@ struct Redirector {
             }
 
         #else
-            int fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+            int fd = open(filename.c_str(), O_WRONLY | O_CREAT | flag[mode], 0666);
 
             if (fd != -1) {
                 saved_fd = dup(target_fd);
