@@ -1,12 +1,12 @@
-#include "Commands.hpp"
-#include <iostream>
-#include <fstream>
+#include"Builtins.hpp"
+#include<iostream>
+#include<fstream>
 #include<filesystem>
 
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::string;
+using std :: cout;
+using std :: cerr;
+using std :: endl;
+using std :: string;
 
 namespace fs = std :: filesystem;
 
@@ -69,14 +69,14 @@ void print(Tokenizer &tokenizer) {
         cout << token << ' ';
     }
 
-    cout << endl;
+    cout << '\n';
 
     redir.restore();
 }
 
 void cat(std :: vector<string> &args) {
     if(args.empty()) {
-        cerr << "cat: missing file operand" << endl;
+        cerr << "cat: missing file operand\n";
         return;
     } 
 
@@ -137,7 +137,7 @@ void cat(std :: vector<string> &args) {
         std :: ifstream file(args[i]);
 
         if(!file.is_open()) {
-            cerr << "cat: " << args[i] << ": No such file or directory" << endl;
+            cerr << "cat: " << args[i] << ": No such file or directory\n";
             continue;
         }
 
@@ -154,9 +154,9 @@ void cat(std :: vector<string> &args) {
 void pwd() {
     try {
         fs :: path current_path = fs :: current_path();
-        cout << current_path.string() << endl;
+        cout << current_path.string() << '\n';
     } catch(const fs :: filesystem_error& e) {
-        cerr << e.what() << endl;
+        cerr << e.what() << '\n';
     }
 }
 
@@ -196,7 +196,7 @@ void changeCWD(Tokenizer &tokenizer) { // change Current Working Directory
     #endif
 
         if (finalHomePath.empty()) {
-            std :: cout << "cd: could not determine home directory" << std::endl;
+            cout << "cd: could not determine home directory\n";
             return;
         }
 
@@ -206,7 +206,7 @@ void changeCWD(Tokenizer &tokenizer) { // change Current Working Directory
 
     if(store[0] + DIRECTORY_DELIMETER == CWD.root_path().string()) { // change the CWD
         if(!fs :: exists(CurrentPath)) {
-            cout << "cd: " << tmp << ": No such file or directory" << endl;
+            cout << "cd: " << tmp << ": No such file or directory\n";
             return;
         }
 
@@ -235,7 +235,7 @@ void changeCWD(Tokenizer &tokenizer) { // change Current Working Directory
     fs :: path new_path(tot_path);
 
     if(!fs :: exists(new_path)) {
-        cout << "cd: " << tmp << ": No such file or directory" << endl;
+        cout << "cd: " << tmp << ": No such file or directory\n";
         return;
     }
 

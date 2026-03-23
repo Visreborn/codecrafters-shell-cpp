@@ -1,14 +1,15 @@
 #include "Shell.hpp"
 #include "Tokenizer.hpp"
-#include "Commands.hpp"
-#include <iostream>
-#include <vector>
-#include <unistd.h>
-#include <filesystem>
-#include <cstdlib>
-#include <sstream>
-#include <fstream>
-#include <fcntl.h>
+#include "Builtins.hpp"
+#include<iostream>
+#include<vector>
+#include<unistd.h>
+#include<filesystem>
+#include<cstdlib>
+#include<sstream>
+#include<fstream>
+#include<fcntl.h>
+#include<algorithm>
 
 using std :: cout;
 using std :: cerr;
@@ -31,8 +32,9 @@ namespace fs = std :: filesystem;
 #endif
 
 // hidden global variables
-const std::vector<string> BUILTIN_COMMANDS = {"echo", "exit", "type", "pwd"};
-std::vector<string> FETCH_PATH;
+const std :: vector<string> BUILTIN_COMMANDS = {"echo", "exit", "type", "pwd"};
+std :: vector<string> FETCH_PATH;
+std :: vector<string> MOST_USED_PHRASES;
 
 // --- PRIVATE FUNCTIONS ---
 
@@ -76,7 +78,7 @@ void handle_type(Tokenizer &tokenizer) {
     if(cnt == 2) {
         for(auto &builtin : BUILTIN_COMMANDS) {
             if(builtin == token) {
-                cout << token << " is a shell builtin" << endl;
+                cout << token << " is a shell builtin" << '\n';
                 return;
             }
         }
@@ -88,11 +90,11 @@ void handle_type(Tokenizer &tokenizer) {
     string res = find_directory(token, 0);
 
     if(res.size() > 0) {
-        cout << token << " is " << res << endl;
+        cout << token << " is " << res << '\n';
         return;
     }
 
-    cout << token << ": not found" << endl;
+    cout << token << ": not found" << '\n';
 }
 
 bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
@@ -116,33 +118,31 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
             if(arg == ">" || arg == "1>") {
                 redirect_file = tokenizer.next();
                 type = 1;
-                break;
+                mode = 0;
+                continue;
             } 
-
-            if(arg == "2>") {
+            else if(arg == "2>") {
                 redirect_file = tokenizer.next();
                 type = 2;
-                break;
+                mode = 0;
+                continue;
             }
-
-            if(arg == ">>" || arg == "1>>") {
+            else if(arg == ">>" || arg == "1>>") {
                 redirect_file = tokenizer.next();
                 type = 1;
                 mode = 1;
-                break;
+                continue;
             }
-
-            if(arg == "2>>") {
+            else if(arg == "2>>") {
                 redirect_file = tokenizer.next();
                 type = 2;
                 mode = 1;
-                break;
+                continue;
             }
 
-            if (arg.find(' ') != string::npos) {
+            if (arg.find(' ') != string :: npos) {
                 arg = "\"" + arg + "\"";
             }
-
             args_str.push_back(arg); 
         }
 
@@ -184,7 +184,7 @@ bool run_external_programs(string &first_token, Tokenizer &tokenizer) {
 // --- PUBLIC FUNCTIONS ---
 
 void init_path() {
-    const char *path_env = std::getenv("PATH");
+    const char *path_env = std :: getenv("PATH");
     if(path_env == nullptr) return;
 
     string path_str(path_env);
@@ -196,6 +196,40 @@ void init_path() {
             FETCH_PATH.push_back(dir);
         }
     }
+
+    
+    for(auto &token : BUILTIN_COMMANDS) {
+        MOST_USED_PHRASES.push_back(token);
+    }
+
+    // Code sửa lại:
+    for(auto &path : FETCH_PATH) {
+        if(!fs::exists(path)) continue;
+        
+        // Bắt lỗi permission denied khi đọc thư mục hệ thống
+        try {
+            for(const auto &entry : fs::directory_iterator(path)) {
+                // Lấy tên file
+                string file_name = entry.path().filename().string();
+                string absolute_path = entry.path().string();
+                
+                // Chỉ thêm vào danh sách gợi ý nếu nó là file thực thi
+                if(IsExecutable(absolute_path)) {
+                    MOST_USED_PHRASES.push_back(file_name);
+                }
+            }
+        } catch (const std::filesystem::filesystem_error& e) {
+            // Bỏ qua các thư mục không có quyền truy cập
+            continue;
+        }
+    }
+
+    // for(int i = 0; i < 5; i ++) {
+    //     cout << MOST_USED_PHRASES[i] << '\n';
+    // }
+
+    std :: sort(MOST_USED_PHRASES.begin(), MOST_USED_PHRASES.end());
+
 }
 
 void exe(const string &input) {
@@ -213,7 +247,7 @@ void exe(const string &input) {
         if (second_token == "") {
             exit(0);
         } else {
-            cout << input << ": command not found" << endl;
+            cout << input << ": command not found" << '\n';
             return;
         }
     }
@@ -256,5 +290,5 @@ void exe(const string &input) {
         return;
     }
 
-    cout << input << ": command not found" << endl;
+    cout << input << ": command not found" << '\n';
 }

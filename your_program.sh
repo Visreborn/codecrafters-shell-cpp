@@ -22,4 +22,8 @@ set -e # Exit early if any commands fail
 #
 # - Edit this to change how your program runs locally
 # - Edit .codecrafters/run.sh to change how your program runs remotely
-exec $(dirname "$0")/build/shell "$@"
+if [[ "$(uname -s)" == MINGW* ]] || [[ "$(uname -s)" == MSYS* ]]; then
+    exec winpty $(dirname "$0")/build/shell "$@"
+else
+    exec $(dirname "$0")/build/shell "$@"
+fi

@@ -1,4 +1,5 @@
 #include "Shell.hpp"
+#include "RealTimeTrackingAndComplete.hpp"
 #include <iostream>
 #include <string>
 
@@ -8,21 +9,41 @@ using std::cerr;
 using std::string;
 
 int main() {
-    // Flush after every cout and cerr
-    cout << std :: unitbuf;
-    cerr << std :: unitbuf;
-
-	// called this from shell.hpp
-
     init_path();
 
     while(1) {
         cout << "$ ";
+        cout.flush(); 
 
-        string input;
-        getline(cin, input);
+        string input = "";
 
-        // also from shell.hpp
+        //real time reading
+        while(1) {
+            int ch = get_char_raw();
+
+            if (ch == '\n' || ch == '\r') { 
+                cout << '\n';
+                break;
+            } 
+
+            if (ch == 127 || ch == '\b') { 
+                if (!input.empty()) {
+                    input.pop_back();
+                    cout << "\b \b";
+                    cout.flush(); 
+                }
+            } 
+
+            else if (ch == 9 || ch == '\t') { 
+                handle_tab_completion(input);
+            } 
+            else { 
+                input += char(ch);
+                cout << char(ch);
+                cout.flush(); 
+            }
+        }
+
         exe(input);
     }
     
