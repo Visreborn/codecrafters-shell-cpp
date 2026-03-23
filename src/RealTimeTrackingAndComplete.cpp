@@ -44,8 +44,7 @@ int get_char_raw() {
 void handle_tab_completion(string &input) {
     auto it = lower_bound(MOST_USED_PHRASES.begin(), MOST_USED_PHRASES.end(), input);
 
-    if(it != MOST_USED_PHRASES.end()) {
-        if(it -> find(input) == 0) { 
+    if(it != MOST_USED_PHRASES.end() && it -> find(input) == 0) {
             string match = *it;
 
             string remainder = match.substr(input.size());
@@ -54,6 +53,10 @@ void handle_tab_completion(string &input) {
             cout.flush();
 
             input += remainder + " ";
-        }
+    } 
+    
+    else {
+        cout << '\a';
+        cout.flush();
     }
 }
