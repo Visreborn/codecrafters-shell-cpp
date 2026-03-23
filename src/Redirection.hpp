@@ -57,7 +57,7 @@ struct Redirector {
 
             // if fd = -1 -> we couldn't open the file
             if(fd != -1) {
-                saved_fd = _dup(target_fd);
+                saved_fd = dup(target_fd);
                 dup2(fd, target_fd); // points to the file as the new intended buffer
                 close(fd);
                 active = 1;
