@@ -40,14 +40,30 @@ int get_char_raw() {
     #endif
 }
 
+string get_last_word(const string &input) {
+    if(input.empty()) {
+        return "";
+    }
+
+    int last_pos = input.find_last_of(" ");
+
+    if(last_pos == string :: npos) {
+        return "";
+    }
+
+    return input.substr(last_pos + 1);
+}
+
 // Note : I will soon optimize this using Trie
 void handle_tab_completion(string &input) {
-    auto it = lower_bound(MOST_USED_PHRASES.begin(), MOST_USED_PHRASES.end(), input);
+    string last_word = get_last_word(input);
 
-    if(it != MOST_USED_PHRASES.end() && it -> find(input) == 0) {
+    auto it = lower_bound(MOST_USED_PHRASES.begin(), MOST_USED_PHRASES.end(), last_word);
+
+    if(it != MOST_USED_PHRASES.end() && it -> find(last_word) == 0) {
             string match = *it;
 
-            string remainder = match.substr(input.size());
+            string remainder = match.substr(last_word.size());
 
             cout << remainder << " ";
             cout.flush();

@@ -197,7 +197,6 @@ void init_path() {
         }
     }
 
-    
     for(auto &token : BUILTIN_COMMANDS) {
         MOST_USED_PHRASES.push_back(token);
     }
