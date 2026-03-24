@@ -32,9 +32,21 @@ namespace fs = std :: filesystem;
 #endif
 
 // hidden global variables
-const std :: vector<string> BUILTIN_COMMANDS = {"echo", "exit", "type", "pwd"};
+std :: vector<std :: vector<string>> COMMAND_BUCKETS = {
+    // aliases
+    {},
+
+    // builtin commands
+    {"pwd", "exit", "echo", "type"},
+
+    // user's functions
+    {},
+    
+    // executables
+    {},
+};
+
 std :: vector<string> FETCH_PATH;
-std :: vector<string> MOST_USED_PHRASES;
 
 // --- PRIVATE FUNCTIONS ---
 
@@ -76,7 +88,7 @@ void handle_type(Tokenizer &tokenizer) {
     int cnt = tokenizer.get_count();
 
     if(cnt == 2) {
-        for(auto &builtin : BUILTIN_COMMANDS) {
+        for(auto &builtin : COMMAND_BUCKETS[1]) {
             if(builtin == token) {
                 cout << token << " is a shell builtin" << '\n';
                 return;
@@ -197,38 +209,28 @@ void init_path() {
         }
     }
 
-    for(auto &token : BUILTIN_COMMANDS) {
-        MOST_USED_PHRASES.push_back(token);
-    }
-
     // Code sửa lại:
     for(auto &path : FETCH_PATH) {
-        if(!fs::exists(path)) continue;
+        if(!fs :: exists(path)) continue;
         
-        // Bắt lỗi permission denied khi đọc thư mục hệ thống
         try {
             for(const auto &entry : fs::directory_iterator(path)) {
-                // Lấy tên file
                 string file_name = entry.path().filename().string();
                 string absolute_path = entry.path().string();
                 
-                // Chỉ thêm vào danh sách gợi ý nếu nó là file thực thi
+                // get executables
                 if(IsExecutable(absolute_path)) {
-                    MOST_USED_PHRASES.push_back(file_name);
+                    COMMAND_BUCKETS[3].push_back(file_name);
                 }
             }
-        } catch (const std::filesystem::filesystem_error& e) {
-            // Bỏ qua các thư mục không có quyền truy cập
+        } catch (const std :: filesystem :: filesystem_error& e) {
             continue;
         }
     }
 
-    // for(int i = 0; i < 5; i ++) {
-    //     cout << MOST_USED_PHRASES[i] << '\n';
-    // }
-
-    std :: sort(MOST_USED_PHRASES.begin(), MOST_USED_PHRASES.end());
-
+    for(int i = 0; i < 4; i ++) {
+        std :: sort(COMMAND_BUCKETS[i].begin(), COMMAND_BUCKETS[i].end());
+    }
 }
 
 void exe(const string &input) {

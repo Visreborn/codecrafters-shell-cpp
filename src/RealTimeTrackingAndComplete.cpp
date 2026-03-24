@@ -48,7 +48,7 @@ string get_last_word(const string &input) {
     int last_pos = input.find_last_of(" ");
 
     if(last_pos == string :: npos) {
-        return "";
+        return input;
     }
 
     return input.substr(last_pos + 1);
@@ -58,9 +58,12 @@ string get_last_word(const string &input) {
 void handle_tab_completion(string &input) {
     string last_word = get_last_word(input);
 
-    auto it = lower_bound(MOST_USED_PHRASES.begin(), MOST_USED_PHRASES.end(), last_word);
+    for(int i = 0; i < 4; i ++) {
+        const std :: vector<string> &MOST_USED_PHRASES = COMMAND_BUCKETS[i];
 
-    if(it != MOST_USED_PHRASES.end() && it -> find(last_word) == 0) {
+        auto it = lower_bound(MOST_USED_PHRASES.begin(), MOST_USED_PHRASES.end(), last_word);
+
+        if(it != MOST_USED_PHRASES.end() && it -> find(last_word) == 0) {
             string match = *it;
 
             string remainder = match.substr(last_word.size());
@@ -69,10 +72,11 @@ void handle_tab_completion(string &input) {
             cout.flush();
 
             input += remainder + " ";
-    } 
-    
-    else {
-        cout << '\a';
-        cout.flush();
+
+            return;
+        } 
     }
+
+    cout << '\a';
+    cout.flush();
 }
