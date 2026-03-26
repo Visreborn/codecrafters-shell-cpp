@@ -27,11 +27,13 @@ int main() {
                 if(tab) {
                     std :: vector<string> ans = COMMAND_BUCKETS[3].get_all_words(input);
 
+                    cout << '\n';
+
                     for(auto &exe : ans) {
                         cout << exe << ' ';
                     }
 
-                    cout << "\n$ ";
+                    cout << "\n$ " << input;
                     cout.flush();
                     tab = 0;
                 }
