@@ -3,6 +3,7 @@
 #include<stdio.h>
 #include<unistd.h>
 #include "Shell.hpp"
+#include "Trie.hpp"
 
 #if defined(_WIN32)
     #include<conio.h>
@@ -14,4 +15,4 @@ int get_char_raw();
 
 // we will first implement the solution using binary search and then use 
 
-void handle_tab_completion(std::string &input);
+bool handle_tab_completion(std::string &input);

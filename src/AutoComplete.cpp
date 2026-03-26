@@ -2,7 +2,7 @@
 #include<stdio.h>
 #include<unistd.h>
 #include<algorithm>
-#include "RealTimeTrackingAndComplete.hpp"
+#include "AutoComplete.hpp"
 
 #if defined(_WIN32)
     #include<conio.h>
@@ -55,17 +55,15 @@ string get_last_word(const string &input) {
 }
 
 // Note : I will soon optimize this using Trie
-void handle_tab_completion(string &input) {
+bool handle_tab_completion(string &input) {
     string last_word = get_last_word(input);
 
     for(int i = 0; i < 4; i ++) {
-        const std :: vector<string> &MOST_USED_PHRASES = COMMAND_BUCKETS[i];
+        Trie &MOST_USED_PHRASES = COMMAND_BUCKETS[i];
 
-        auto it = lower_bound(MOST_USED_PHRASES.begin(), MOST_USED_PHRASES.end(), last_word);
+        string match = MOST_USED_PHRASES.get_longest_common_prefix(last_word);
 
-        if(it != MOST_USED_PHRASES.end() && it -> find(last_word) == 0) {
-            string match = *it;
-
+        if(match.size() > last_word.size()) {
             string remainder = match.substr(last_word.size());
 
             cout << remainder << " ";
@@ -73,10 +71,11 @@ void handle_tab_completion(string &input) {
 
             input += remainder + " ";
 
-            return;
-        } 
-    }
-
+            return 1;
+        }
+    } 
+        
     cout << '\a';
     cout.flush();
+    return 0;
 }

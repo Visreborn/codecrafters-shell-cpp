@@ -1,6 +1,7 @@
 #include "Shell.hpp"
 #include "Tokenizer.hpp"
 #include "Builtins.hpp"
+#include "Trie.hpp"
 #include<iostream>
 #include<vector>
 #include<unistd.h>
@@ -32,19 +33,17 @@ namespace fs = std :: filesystem;
 #endif
 
 // hidden global variables
-std :: vector<std :: vector<string>> COMMAND_BUCKETS = {
-    // aliases
-    {},
 
-    // builtin commands
-    {"pwd", "exit", "echo", "type"},
+/*
+    Priority :
+    0 -> aliases
+    1 -> builtin commands
+    2 -> user's functions
+    3 -> executables
+*/
+std :: vector<Trie> COMMAND_BUCKETS(4);
 
-    // user's functions
-    {},
-    
-    // executables
-    {},
-};
+std :: vector<string> COMMAND_BUILTINS = {"echo", "pwd", "type", "exit"};
 
 std :: vector<string> FETCH_PATH;
 
@@ -88,7 +87,7 @@ void handle_type(Tokenizer &tokenizer) {
     int cnt = tokenizer.get_count();
 
     if(cnt == 2) {
-        for(auto &builtin : COMMAND_BUCKETS[1]) {
+        for(auto &builtin : COMMAND_BUILTINS) {
             if(builtin == token) {
                 cout << token << " is a shell builtin" << '\n';
                 return;
@@ -209,6 +208,10 @@ void init_path() {
         }
     }
 
+    for(auto &cmd : COMMAND_BUILTINS) {
+        COMMAND_BUCKETS[1].insert(cmd);
+    }
+
     // Code sửa lại:
     for(auto &path : FETCH_PATH) {
         if(!fs :: exists(path)) continue;
@@ -220,16 +223,14 @@ void init_path() {
                 
                 // get executables
                 if(IsExecutable(absolute_path)) {
-                    COMMAND_BUCKETS[3].push_back(file_name);
+                    COMMAND_BUCKETS[3].insert(file_name);
                 }
             }
-        } catch (const std :: filesystem :: filesystem_error& e) {
+        } 
+        
+        catch (const std :: filesystem :: filesystem_error& e) {
             continue;
         }
-    }
-
-    for(int i = 0; i < 4; i ++) {
-        std :: sort(COMMAND_BUCKETS[i].begin(), COMMAND_BUCKETS[i].end());
     }
 }
 

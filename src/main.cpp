@@ -1,5 +1,5 @@
 #include "Shell.hpp"
-#include "RealTimeTrackingAndComplete.hpp"
+#include "AutoComplete.hpp"
 #include <iostream>
 #include <string>
 
@@ -16,10 +16,43 @@ int main() {
         cout.flush(); 
 
         string input = "";
+        // can only be activated after calling tab on a command prefix
+        bool tab = 0;
 
         //real time reading
         while(1) {
             int ch = get_char_raw();
+
+            if(ch == 9 || ch == '\t') {
+                if(tab) {
+                    std :: vector<string> ans = COMMAND_BUCKETS[3].get_all_words(input);
+
+                    for(auto &exe : ans) {
+                        cout << exe << ' ';
+                    }
+
+                    cout << "\n$ ";
+                    cout.flush();
+                    tab = 0;
+                }
+
+                else {
+                    if(!input.empty() && input.back() == '_') {
+                        cout << '\a';
+                        cout.flush();
+                        tab = 1;
+                    }
+
+                    else {
+                        handle_tab_completion(input);
+                    }
+                }
+
+                continue;
+            }
+
+            // we did not press tab
+            tab = 0;    
 
             if (ch == '\n' || ch == '\r') { 
                 cout << '\n';
@@ -34,9 +67,6 @@ int main() {
                 }
             } 
 
-            else if (ch == 9 || ch == '\t') { 
-                handle_tab_completion(input);
-            } 
             else { 
                 input += char(ch);
                 cout << char(ch);
