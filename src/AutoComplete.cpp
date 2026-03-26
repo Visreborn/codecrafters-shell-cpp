@@ -54,9 +54,9 @@ string get_last_word(const string &input) {
     return input.substr(last_pos + 1);
 }
 
-// Note : I will soon optimize this using Trie
 bool handle_tab_completion(string &input) {
     string last_word = get_last_word(input);
+    if(last_word.size() == 0) return 0;
 
     for(int i = 0; i < 4; i ++) {
         Trie &MOST_USED_PHRASES = COMMAND_BUCKETS[i];

@@ -39,15 +39,7 @@ int main() {
                 }
 
                 else {
-                    if(!input.empty() && input.back() == '_') {
-                        cout << '\a';
-                        cout.flush();
-                        tab = 1;
-                    }
-
-                    else {
-                        handle_tab_completion(input);
-                    }
+                    handle_tab_completion(input);
                 }
 
                 continue;
