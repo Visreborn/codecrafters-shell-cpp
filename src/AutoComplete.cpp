@@ -56,7 +56,10 @@ string get_last_word(const string &input) {
 
 bool handle_tab_completion(string &input) {
     string last_word = get_last_word(input);
-    if(last_word.size() == 0) return 0;
+
+    if(last_word.empty()) {
+        return 0;
+    }
 
     for(int i = 0; i < 4; i ++) {
         Trie &MOST_USED_PHRASES = COMMAND_BUCKETS[i];
@@ -66,16 +69,35 @@ bool handle_tab_completion(string &input) {
         if(match.size() > last_word.size()) {
             string remainder = match.substr(last_word.size());
 
-            cout << remainder << " ";
+            std :: vector<string> matches = MOST_USED_PHRASES.get_all_words(match);
+            if(matches.size() == 1) {
+                remainder += " ";
+            }
+
+            cout << remainder;
             cout.flush();
 
-            input += remainder + " ";
+            input += remainder;
 
             return 1;
         }
     } 
         
-    cout << '\a';
-    cout.flush();
     return 0;
+}
+
+void listing(const string &input) {
+    string last_word = get_last_word(input);
+    std :: vector<string> ans = COMMAND_BUCKETS[3].get_all_words(last_word);
+
+    if(!ans.empty()) {
+        cout << '\n';
+
+        for(auto &exe : ans) {
+            cout << exe << "  ";
+        }
+
+        cout << "\n$ " << input;
+        cout.flush();
+    }
 }

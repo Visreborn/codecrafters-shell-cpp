@@ -15,4 +15,6 @@ int get_char_raw();
 
 // we will first implement the solution using binary search and then use 
 
-bool handle_tab_completion(std::string &input);
+bool handle_tab_completion(std :: string &input);
+
+void listing(const std :: string &input);

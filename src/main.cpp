@@ -16,43 +16,38 @@ int main() {
         cout.flush(); 
 
         string input = "";
-        // can only be activated after calling tab on a command prefix
+        // can only be activated after calling tab one
         bool tab = 0;
 
-        //real time reading
         while(1) {
             int ch = get_char_raw();
 
             if(ch == 9 || ch == '\t') {
                 if(tab) {
-                    std :: vector<string> ans = COMMAND_BUCKETS[3].get_all_words(input);
-
-                    cout << '\n';
-
-                    for(auto &exe : ans) {
-                        cout << exe << ' ';
-                    }
-
-                    cout << "\n$ " << input;
-                    cout.flush();
+                    // get all the possible words
+                    listing(input);
                     tab = 0;
                 }
-
                 else {
-                    handle_tab_completion(input);
+                    if(!handle_tab_completion(input)) {
+                        cout << '\a';
+                        cout.flush();
+                        tab = 1;
+                    }
                 }
 
                 continue;
             }
 
-            // we did not press tab
             tab = 0;    
 
+            // endline
             if (ch == '\n' || ch == '\r') { 
                 cout << '\n';
                 break;
             } 
 
+            // delete(backspace)
             if (ch == 127 || ch == '\b') { 
                 if (!input.empty()) {
                     input.pop_back();
@@ -61,6 +56,7 @@ int main() {
                 }
             } 
 
+            // normal character
             else { 
                 input += char(ch);
                 cout << char(ch);
