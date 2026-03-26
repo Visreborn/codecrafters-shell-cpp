@@ -33,7 +33,12 @@ int main() {
                 }
 
                 if(second_token_onwards) {
-                    get_filename(input);
+                    bool successful = get_filename(input);
+
+                    if(!successful) {
+                        get_directory(input);
+                    }
+                    
                     continue;
                 }
 
@@ -67,6 +72,12 @@ int main() {
                     input.pop_back();
                     cout << "\b \b";
                     cout.flush(); 
+
+                    if(second_token_onwards) {
+                        if(input.find_last_of(' ') == string :: npos) {
+                            second_token_onwards = 0;
+                        }
+                    }
                 }
             } 
 

@@ -19,4 +19,6 @@ bool handle_tab_completion(std :: string &input);
 
 void listing(const std :: string &input);
 
-void get_filename(std :: string &input);
+bool get_filename(std :: string &input);
+
+bool get_directory(std :: string &input);

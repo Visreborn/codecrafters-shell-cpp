@@ -104,10 +104,10 @@ void listing(const string &input) {
     }
 }
 
-void get_filename(string &input) {
+bool get_filename(string &input) {
     string prefix = get_last_word(input);
 
-    if(prefix.empty()) return;
+    if(prefix.empty()) return 0;
 
     fs :: path CurrentPath = fs :: current_path();
 
@@ -119,7 +119,47 @@ void get_filename(string &input) {
             cout << remainder;
             cout.flush();
             input += remainder;
-            return;
+            return 1;
         }
     }
+
+    return 0;
+}
+
+bool get_directory(string &input) {
+    string tot = get_last_word(input);
+
+    #if defined(_WIN32) 
+        size_t pos = tot.find_last_of('\\');
+    #else 
+        size_t pos = tot.find_last_of('/');
+    #endif
+
+    if(pos == string :: npos) return 0;
+
+    string dir = tot.substr(0, pos + 1);
+    string prefix = tot.substr(pos + 1);
+
+    if(prefix.empty()) return 0;
+
+    fs :: path CurrentPath(dir);
+
+    std :: error_code ec;
+    if (!fs :: exists(CurrentPath, ec) || !fs :: is_directory(CurrentPath, ec)) {
+        return 0;
+    }
+    
+    for(const auto &entry : fs :: directory_iterator(CurrentPath, ec)) {
+        string filename = entry.path().filename().string();
+        
+        if(filename.find(prefix) == 0) {
+            string remainder = filename.substr(prefix.size()) + " ";
+            cout << remainder;
+            cout.flush();
+            input += remainder;
+            return 1;
+        }
+    }
+
+    return 0;
 }
