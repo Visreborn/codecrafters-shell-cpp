@@ -64,13 +64,12 @@ bool handle_tab_completion(string &input) {
     for(int i = 0; i < 4; i ++) {
         Trie &MOST_USED_PHRASES = COMMAND_BUCKETS[i];
 
-        string match = MOST_USED_PHRASES.get_longest_common_prefix(last_word);
+        auto [match, ended] = MOST_USED_PHRASES.get_longest_common_prefix(last_word);
 
         if(match.size() > last_word.size()) {
             string remainder = match.substr(last_word.size());
 
-            std :: vector<string> matches = MOST_USED_PHRASES.get_all_words(match);
-            if(matches.size() == 1) {
+            if(ended == 1) {
                 remainder += " ";
             }
 

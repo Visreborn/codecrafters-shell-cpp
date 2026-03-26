@@ -3,6 +3,7 @@
 #include<vector>
 #include<string>
 #include<algorithm>
+#include<utility>
 
 struct Node {
     int endCount;
@@ -62,14 +63,16 @@ class Trie {
             cur_node -> endCount ++;
         }
 
-        std :: string get_longest_common_prefix(const std :: string &prefix) {
+        std :: pair<std :: string, bool> get_longest_common_prefix(const std :: string &prefix) {
             Node *cur_node = root;
             std :: string ans = prefix;
+
+            bool ended = 0;
 
             for(auto &ch : prefix) {
                 if(cur_node -> child.find(ch) == cur_node -> child.end()) {
                     // we could not add more to the auto completion
-                    return ans;
+                    return {ans, ended};
                 }
 
                 cur_node = cur_node -> child[ch];
@@ -85,7 +88,11 @@ class Trie {
                 cur_node = only_branch -> second;
             }
 
-            return ans;
+            if(cur_node -> child.size() == 0) {
+                ended = 1;
+            }
+
+            return {ans, ended};
         }
 
         std :: vector<std :: string> get_all_words(const std :: string &prefix) {
