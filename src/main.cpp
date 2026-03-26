@@ -18,11 +18,25 @@ int main() {
         string input = "";
         // can only be activated after calling tab one
         bool tab = 0;
+        bool second_token_onwards = 0;
 
         while(1) {
             int ch = get_char_raw();
 
             if(ch == 9 || ch == '\t') {
+                if(!second_token_onwards) {
+                    int pos = input.find_last_of(" ");
+
+                    if(pos != string :: npos) {
+                        second_token_onwards = 1;
+                    }
+                }
+
+                if(second_token_onwards) {
+                    get_filename(input);
+                    continue;
+                }
+
                 if(tab) {
                     // get all the possible words
                     listing(input);

@@ -3,6 +3,7 @@
 #include<unistd.h>
 #include<algorithm>
 #include "AutoComplete.hpp"
+#include<filesystem>
 
 #if defined(_WIN32)
     #include<conio.h>
@@ -12,6 +13,8 @@
 
 using std :: string;
 using std :: cout;
+
+namespace fs = std :: filesystem;
 
 int get_char_raw() {
     #if defined(_WIN32)
@@ -98,5 +101,25 @@ void listing(const string &input) {
 
         cout << "\n$ " << input;
         cout.flush();
+    }
+}
+
+void get_filename(string &input) {
+    string prefix = get_last_word(input);
+
+    if(prefix.empty()) return;
+
+    fs :: path CurrentPath = fs :: current_path();
+
+    for(const auto &entry : fs :: directory_iterator(CurrentPath)) {
+        string filename = entry.path().filename().string();
+        
+        if(filename.find(prefix) == 0) {
+            string remainder = filename.substr(prefix.size()) + " ";
+            cout << remainder;
+            cout.flush();
+            input += remainder;
+            return;
+        }
     }
 }

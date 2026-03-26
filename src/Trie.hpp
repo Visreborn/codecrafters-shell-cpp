@@ -44,6 +44,7 @@ class Trie {
             root = new Node();
         }
 
+        // deconstructor
         ~Trie() {
             delete root;
         }
