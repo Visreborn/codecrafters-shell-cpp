@@ -140,8 +140,6 @@ bool get_directory(string &input) {
     string dir = tot.substr(0, pos + 1);
     string prefix = tot.substr(pos + 1);
 
-    if(prefix.empty()) return 0;
-
     fs :: path CurrentPath(dir);
 
     std :: error_code ec;
