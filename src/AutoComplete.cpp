@@ -126,7 +126,7 @@ bool get_filename(string &input) {
     return 0;
 }
 
-bool get_directory(string &input) {
+bool get_absolute_path(string &input) {
     string tot = get_last_word(input);
 
     #if defined(_WIN32) 
@@ -152,6 +152,57 @@ bool get_directory(string &input) {
         
         if(filename.find(prefix) == 0) {
             string remainder = filename.substr(prefix.size()) + " ";
+            cout << remainder;
+            cout.flush();
+            input += remainder;
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+bool get_directory(string &input) {
+    string tot = get_last_word(input);
+    if(tot.empty()) return 0;
+
+    string dir = "."; 
+    string prefix = tot;
+
+    #if defined(_WIN32) 
+        size_t pos = tot.find_last_of('\\');
+    #else 
+        size_t pos = tot.find_last_of('/');
+    #endif
+
+    if(pos != string :: npos) {
+        dir = tot.substr(0, pos + 1);
+        prefix = tot.substr(pos + 1);
+    }
+
+    fs :: path CurrentPath(dir);
+    std :: error_code ec;
+
+    if (!fs :: exists(CurrentPath, ec) || !fs :: is_directory(CurrentPath, ec)) {
+        return 0;
+    }
+    
+    for(const auto &entry : fs :: directory_iterator(CurrentPath, ec)) {
+        if (!entry.is_directory(ec)) {
+            continue; 
+        }
+
+        string dirname = entry.path().filename().string();
+        
+        if(dirname.find(prefix) == 0) {
+            string remainder = dirname.substr(prefix.size());
+            
+            #if defined(_WIN32)
+                remainder += "\\ ";
+            #else
+                remainder += "/ ";
+            #endif
+
             cout << remainder;
             cout.flush();
             input += remainder;
