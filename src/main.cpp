@@ -39,6 +39,9 @@ int main() {
 
                     if (get_absolute_path(input)) continue;
 
+                    cout << '\a';
+                    cout.flush();
+
                     continue;
                 }
 
