@@ -163,27 +163,53 @@ bool get_absolute_path(string &input) {
 }
 
 bool get_directory(string &input) {
-    string prefix = get_last_word(input);
+    string tot = get_last_word(input);
     
-    // cwd only
-    fs :: path CurrentPath("."); 
+    // Mặc định tìm ở thư mục hiện tại
+    string dir = "."; 
+    string prefix = tot;
+
+    // Tìm dấu gạch chéo cuối cùng để xem có phải đường dẫn không
+    #if defined(_WIN32) 
+        size_t pos = tot.find_last_of('\\');
+    #else 
+        size_t pos = tot.find_last_of('/');
+    #endif
+
+    // Nếu có dấu phân cách, tách riêng thư mục gốc và từ khóa cần tìm
+    if(pos != string :: npos) {
+        dir = tot.substr(0, pos + 1);
+        prefix = tot.substr(pos + 1);
+    }
+
+    fs :: path CurrentPath(dir);
     std :: error_code ec;
 
+    // Kiểm tra an toàn: đường dẫn có tồn tại và đúng là thư mục không?
+    if (!fs :: exists(CurrentPath, ec) || !fs :: is_directory(CurrentPath, ec)) {
+        return 0;
+    }
+    
+    // Bắt đầu quét
     for(const auto &entry : fs :: directory_iterator(CurrentPath, ec)) {
+        // QUAN TRỌNG: Bỏ qua ngay lập tức nếu đây là file thường
         if (!entry.is_directory(ec)) {
             continue; 
         }
 
         string dirname = entry.path().filename().string();
         
+        // Khớp từ khóa (nếu prefix = "" thì nó sẽ tự khớp thư mục đầu tiên thấy)
         if(dirname.find(prefix) == 0) {
-
-            #if defined(_WIN32)
-                string remainder = dirname.substr(prefix.size()) + "\\";
-            #else
-                string remainder = dirname.substr(prefix.size()) + "/";
-            #endif
+            string remainder = dirname.substr(prefix.size());
             
+            // Nối thêm gạch chéo thay vì dấu cách
+            #if defined(_WIN32)
+                remainder += "\\";
+            #else
+                remainder += "/";
+            #endif
+
             cout << remainder;
             cout.flush();
             input += remainder;
@@ -191,5 +217,5 @@ bool get_directory(string &input) {
         }
     }
 
-    return 0;
+    return 0; // Không tìm thấy gì
 }

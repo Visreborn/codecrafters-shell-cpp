@@ -33,12 +33,12 @@ int main() {
                 }
 
                 if(second_token_onwards) {
-                    if(get_filename(input)) continue;
+                    if (get_directory(input)) continue;
 
-                    if(get_directory(input)) continue;
+                    if (get_filename(input)) continue;
 
-                    if(get_absolute_path(input)) continue;
-                    
+                    if (get_absolute_path(input)) continue;
+
                     continue;
                 }
 
