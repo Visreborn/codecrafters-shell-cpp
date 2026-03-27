@@ -165,7 +165,6 @@ bool get_absolute_path(string &input) {
 bool get_directory(string &input) {
     string prefix = get_last_word(input);
     
-
     // cwd only
     fs :: path CurrentPath("."); 
     std :: error_code ec;

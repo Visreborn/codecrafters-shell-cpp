@@ -33,15 +33,11 @@ int main() {
                 }
 
                 if(second_token_onwards) {
-                    bool filename_success = get_filename(input);
+                    if(get_filename(input)) continue;
 
-                    if(filename_success == 1) continue;
+                    if(get_directory(input)) continue;
 
-                    bool absolute_path_success = get_absolute_path(input);
-
-                    if(absolute_path_success == 1) continue;
-
-                    bool directory_sucess = get_directory(input);
+                    if(get_absolute_path(input)) continue;
                     
                     continue;
                 }
